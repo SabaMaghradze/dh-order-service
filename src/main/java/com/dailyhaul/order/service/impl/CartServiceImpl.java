@@ -1,7 +1,14 @@
 package com.dailyhaul.order.service.impl;
 
+import com.dailyhaul.order.client.ProductServiceClient;
+import com.dailyhaul.order.client.UserServiceClient;
 import com.dailyhaul.order.dto.CartItemRequest;
 import com.dailyhaul.order.dto.CartItemResponse;
+import com.dailyhaul.order.dto.ProductResponse;
+import com.dailyhaul.order.dto.UserResponse;
+import com.dailyhaul.order.exception.OutOfStockException;
+import com.dailyhaul.order.exception.ProductNotFoundException;
+import com.dailyhaul.order.exception.UserNotFoundException;
 import com.dailyhaul.order.model.CartItem;
 import com.dailyhaul.order.repository.CartRepository;
 import com.dailyhaul.order.service.CartService;
@@ -11,9 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,29 +27,30 @@ import java.util.stream.Collectors;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-//    private final ProductRepository productRepository;
-//    private final UserRepository userRepository;
+    private final ProductServiceClient productServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Override
-    public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
+    public void addToCart(String userId, CartItemRequest cartItemRequest) {
 
-//        Optional<Product> productOpt = productRepository.findById(cartItemRequest.getProductId());
-//        if (productOpt.isEmpty()) {
-//            return false;
-//        }
-//
-//        Product product = productOpt.get();
-//
-//        if (product.getQuantity() < cartItemRequest.getQuantity()) {
-//            return false;
-//        }
-//
-//        Optional<User> userOpt = userRepository.findById(Long.valueOf(userId));
-//        if (userOpt.isEmpty()) {
-//            return false;
-//        }
-//
-//        User user = userOpt.get();
+        ProductResponse productResponse = productServiceClient.getProductById(cartItemRequest.getProductId());
+
+        if (productResponse == null) {
+            throw new ProductNotFoundException("Product not found");
+        }
+
+        if (productResponse.getQuantity() == null || productResponse.getQuantity() == 0) {
+            throw new OutOfStockException("Product is out of stock");
+        }
+
+        if (productResponse.getQuantity() < cartItemRequest.getQuantity()) {
+            throw new OutOfStockException("This product of " + cartItemRequest.getQuantity() + " units is not available");
+        }
+
+        Optional<UserResponse> userOpt = userServiceClient.getUser(userId);
+        if (userOpt.isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
 
         CartItem existingCartItem = cartRepository.findByUserIdAndProductId(userId, cartItemRequest.getProductId());
 
@@ -59,12 +66,10 @@ public class CartServiceImpl implements CartService {
 
             cartRepository.save(cartItem);
         }
-        return true;
-
     }
 
     @Override
-    public boolean removeFromCart(String userId, String productId) {
+    public boolean removeFromCart(String userId, Long productId) {
 
 //        Optional<Product> productOpt = productRepository.findById(productId);
 //        Optional<User> userOpt = userRepository.findById(Long.valueOf(userId));

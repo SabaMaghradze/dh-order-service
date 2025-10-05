@@ -15,7 +15,7 @@ public class CartItemResponse {
 
     private String userId;
 
-    private String productId;
+    private Long productId;
 
     private Integer quantity;
 

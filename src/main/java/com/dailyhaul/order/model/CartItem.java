@@ -22,7 +22,7 @@ public class CartItem {
 
     private String userId;
 
-    private String productId;
+    private Long productId;
 
     private Integer quantity;
 
@@ -34,7 +34,7 @@ public class CartItem {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public CartItem(String userId, String productId, Integer quantity, BigDecimal price) {
+    public CartItem(String userId, Long productId, Integer quantity, BigDecimal price) {
         this.userId = userId;
         this.productId = productId;
         this.quantity = quantity;

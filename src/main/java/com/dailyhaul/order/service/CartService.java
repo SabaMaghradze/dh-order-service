@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface CartService {
 
-    boolean addToCart(String userId, CartItemRequest cartItemRequest);
+    void addToCart(String userId, CartItemRequest cartItemRequest);
 
-    boolean removeFromCart(String userId, String productId);
+    boolean removeFromCart(String userId, Long productId);
 
     CartItemResponse fetchCart(Long cartId);
 

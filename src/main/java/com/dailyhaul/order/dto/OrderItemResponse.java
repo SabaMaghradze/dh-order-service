@@ -11,7 +11,7 @@ public class OrderItemResponse {
 
     private Long id;
 
-    private String productId;
+    private Long productId;
 
     private Integer quantity;
 
